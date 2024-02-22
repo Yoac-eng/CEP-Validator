@@ -35,11 +35,20 @@ public class CepService {
      * @return {@link Mono<String>} com o nome do distrito ou um erro se o CEP for inválido ou fora da área.
      */
     public Mono<String> validate(String cep) {
-        String cepRegex = "^\\d{5}-\\d{3}$";
+        String cepFormatado = cep;
+        String cepSemHifenRegex = "^\\d{8}$";
+        String cepComHifenRegex = "^\\d{5}-\\d{3}$";
 
-        if (!cep.matches(cepRegex)) {
+        // Se o CEP estiver no formato NNNNNNNN, converte para NNNNN-NNN
+        if (cep.matches(cepSemHifenRegex)) {
+            cepFormatado = cep.substring(0, 5) + "-" + cep.substring(5);
+        }
+
+        // Valida se o CEP está agora no formato correto NNNNN-NNN
+        if (!cepFormatado.matches(cepComHifenRegex)) {
             return Mono.error(new CepInvalidoException("CEP inválido, por favor verifique o formato do mesmo."));
         }
+
         return obterDistritoPorCep(cep)
                 .flatMap(distrito -> {
                     if (DistritoValidator.isValid(distrito)) {
