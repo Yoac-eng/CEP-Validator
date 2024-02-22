@@ -2,7 +2,9 @@ package br.com.conectaporto.validadorcep.services.util;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 @Configuration
 public class WebClientConfig {
@@ -16,7 +18,11 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl("https://brasilaberto.com/")
+                .baseUrl("https://api.brasilaberto.com")
+                .clientConnector(new ReactorClientHttpConnector(
+                        // Habilita o redirecionamento, que não é automatico no webclient
+                        HttpClient.create().followRedirect(true)
+                ))
                 .build();
     }
 }

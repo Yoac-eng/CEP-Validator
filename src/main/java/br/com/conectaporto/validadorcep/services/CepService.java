@@ -4,11 +4,15 @@ import br.com.conectaporto.validadorcep.models.dto.BrasilAbertoApiResponse;
 import br.com.conectaporto.validadorcep.services.exceptions.CepForaDeAreaException;
 import br.com.conectaporto.validadorcep.services.exceptions.CepInvalidoException;
 import br.com.conectaporto.validadorcep.services.util.DistritoValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
 
 @Service
 public class CepService {
@@ -16,6 +20,8 @@ public class CepService {
     // WebClient do WebFlux para se comunicar com API externa.
     private final WebClient webClient;
 
+    // Logger para auxiliar no debug no desenvolvimento com webflux
+    private static final Logger logger = LoggerFactory.getLogger(CepService.class);
     @Autowired
     public CepService(WebClient webClient) {
         this.webClient = webClient;
@@ -57,15 +63,16 @@ public class CepService {
 
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/zipcode/{cep}")
+                        .path("/v1/zipcode/{cep}")
                         .build(cep))
+                .accept(MediaType.APPLICATION_JSON)
                 .exchangeToMono(response -> {
-                   if(response.statusCode().equals(HttpStatus.OK)){
-                       return response.bodyToMono(BrasilAbertoApiResponse.class)
-                               .map(brasilAbertoApiResponse -> brasilAbertoApiResponse.getResult().getDistrict());
-                   }else{
-                       return Mono.error(new CepInvalidoException("CEP inválido, este CEP não existe."));
-                   }
+                    if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        return Mono.error(new CepInvalidoException("CEP inválido, este CEP não existe."));
+                    } else {
+                        return response.bodyToMono(BrasilAbertoApiResponse.class)
+                                .map(brasilAbertoApiResponse -> brasilAbertoApiResponse.getResult().getDistrict());
+                    }
                 });
     }
 }

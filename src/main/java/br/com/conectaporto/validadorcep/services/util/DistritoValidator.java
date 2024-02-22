@@ -13,7 +13,7 @@ public class DistritoValidator {
             "Alto da Vitória", "Anjo da Guarda", "Fumacê", "Gancharia", "Itaqui", "Vila Verde",
             "Alto da Esperança", "Mauro Fecury I", "Mauro Fecury II", "Residencial Ana Jansen",
             "São Raimundo", "Tamancão", "Vila Ariri", "Vila Nova", "Vila São Luís", "Vila São Mateus",
-            "Jambeiro", "Sa Viana", "Vila Bacanga", "Vila Cerâmica", "Vila Dom Luís", "Vila Isabel",
+            "Jambeiro", "Sá Viana", "Vila Bacanga", "Vila Cerâmica", "Vila Dom Luís", "Vila Isabel",
             "Vila Real", "América do Norte", "Argola e Tambor", "Cidade Nova", "Gapara",
             "Residencial Paraíso", "Residencial Primavera", "Residencial Resende", "São Benedito",
             "Vila da Paz", "Vila Embratel I", "Vila Embratel II", "Vila São João",
@@ -26,11 +26,15 @@ public class DistritoValidator {
 
     /**
      * Valida a String do distrito/bairro e verifica se a mesma está na área de Itaqui-Bacanga.
+     * A validação leva em consideração que os nomes providos pelo serviço externo podem deferir
+     * dos nomes do Set dispostos nesta classe, portanto a comparação é feita de acordo.
      *
      * @param district O distrito/bairro a ser validado.
      * @return boolean
      */
     public static boolean isValid(String district) {
-        return DISTRICTS.contains(district.toLowerCase());
+        String districtLowerCase = district.toLowerCase();
+
+        return DISTRICTS.stream().anyMatch(districtLowerCase::contains);
     }
 }
